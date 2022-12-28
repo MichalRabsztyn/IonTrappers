@@ -13,6 +13,9 @@ using namespace std::complex_literals;
 using namespace std;
 
 
+
+
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class IONTRAPPERS_API UCCalculatorMain : public UActorComponent
 {
@@ -31,6 +34,6 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	UFUNCTION(BlueprintCallable)
-	int CalculateMatrix(float phase, float&phaseOut);
-	complex<float>** multiplication(int i, int j, int k, int r1, int r2, int c1, int c2, complex<float> mult[2][2], complex<float> first[2][2], complex<float> second[2][2]);
+	int CalculateMatrix(TArray<int>GatesIDs, TArray<int>Parameters);
+	complex<float>** multiplication(int r1, int r2, int c1, int c2, complex<float> first[2][2], complex<float> second[2][2]);
 };
