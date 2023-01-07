@@ -1,5 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
+#include "CCalculatorMain.h"
+#include "MatrixCalculator.h"
 #include <iostream>
 #include <cmath>
 #include <complex>
@@ -8,8 +9,7 @@
 #include "Algo/Reverse.h"
 using namespace std::complex_literals;
 using namespace std;
-#include "CCalculatorMain.h"
-#include "MatrixCalculator.h"
+
 
 
 struct hadamard {
@@ -122,6 +122,8 @@ int UCCalculatorMain::CalculateMatrix(TArray<int>GatesIDs, TArray<int>Parameters
     //auto phase = log(tp[3][0] / tp[1][0].real()).imag();
     //auto prob = tp;
     //UE_LOG(LogTemp, Warning, TEXT("%f"), phase);
+
+
     const int nrolls = 10000; // number of experiments
     std::default_random_engine generator;
     std::bernoulli_distribution distribution(pow(abs(res[1][0]), 2));
