@@ -9,6 +9,7 @@
 using namespace std::complex_literals;
 using namespace std;
 #include "CCalculatorMain.h"
+#include "MatrixCalculator.h"
 
 
 struct hadamard {
@@ -68,125 +69,70 @@ void UCCalculatorMain::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 	// ...
 }
 
-complex<float>** UCCalculatorMain::multiplication(int r1, int r2, int c1, int c2, complex<float> first[2][2], complex<float> second[2][2]) {
 
-    complex<float>** tab = new complex<float>*[2];
-    for (int i = 0; i < 2; i++)
-    {
-        tab[i] = new complex<float>[2];
-    }
-    for (int i = 0; i < r1; i++)
-    {
-        for (int j = 0; j < c1; j++)
-        {
-            tab[i][j] = 0;
-            for (int k = 0; k < c1; k++)
-            {
-                tab[i][j] += first[i][k] * second[k][j];
-            }
-        }
-    }
-    return tab;
-}
 
 
 //int UCCalculatorMain::CalculateMatrix(float phase, float& posibility)
 int UCCalculatorMain::CalculateMatrix(TArray<int>GatesIDs, TArray<int>Parameters)
 
 {
-    struct slope s;
-    struct hadamard h;
-    
-    struct ionState iS;
-    //complex<float> h[2][2] = { {1 / sqrt(2), 1 / sqrt(2)}, {1 / sqrt(2), -1 / sqrt(2)} };
-    //complex<float> p[2][2] = { {1, 0}, {0, exp(pi/phase * 1if) } };
-    complex<float> mult[2][2] = { {0}, {1} };
-    //complex<float> slope[2][2] = { {0}, {1} };
-   
-    complex<float>** res;
-    //complex<float>** res2;
-    int r1 = 2,
-        c1 = 2,
-        r2 = 2,
-        c2 = 2,
-        i = 0,
-        j = 0,
-        k = 0;
+
+    double pH = 3.141592 / 3;
+    const double e = 2.71828;
+    int tmp = 3;
+    MatrixCalculator h(2, 2, std::vector<std::vector<std::complex<double>>>{ {1 / sqrt(2), 1 / sqrt(2)}, { 1 / sqrt(2), -1 / sqrt(2) } });
+    MatrixCalculator p(2, 2, std::vector<std::vector<std::complex<double>>>{ {1, 0}, { 0, exp(pH * 1i) } });
+    MatrixCalculator mult(2, 2, std::vector<std::vector<std::complex<double>>>{ {0, 0}, { 0, 0 } });
+    MatrixCalculator slope(2, 1, std::vector<std::vector<std::complex<double>>>{ {1}, { 0 } });
+    MatrixCalculator slope2(2, 1, std::vector<std::vector<std::complex<double>>>{ {1}, { 0 } });
+    MatrixCalculator cp(4, 4, std::vector<std::vector<std::complex<double>>>{ {1, 0, 0, 0}, { 0,1,0,0 }, { 0,0,1,0 }, { 0,0,0,exp(pH * 1i) } });
+    MatrixCalculator tp(4, 1);
+    MatrixCalculator qnot(2, 2, std::vector<std::vector<std::complex<double>>>{ {0, 1}, { 1, 0 } });
+
+    MatrixCalculator res(2, 1);
+    MatrixCalculator res2(2, 1);
+
 
 
     Algo::Reverse(GatesIDs);
     for (int l = 0; l < GatesIDs.Num(); l++) {
-        /*switch (GatesIDs[l]) {
+        switch (GatesIDs[l]) {
         case 1:
-            res = multiplication(r1, r2, c1, c2, mult, h.h);
+            if (l == 0) res = h * slope;
+            else res = h * res;
             break;
         case 2:
-            struct physeShift pS(Parameters[l]);
-            pS.phase = Parameters[l];
-            pS.pS[2][2] = second[2][2];
-            UE_LOG(LogTemp, Warning, TEXT("%f"),pS.phase);
-            res = multiplication(r1, r2, c1, c2, mult, pS.pS);
+            if (l == 0) res = p * slope;
+            else res = p * res;
             break;
-
         default:
-            struct physeShift pS(1);
-            res = {};
             break;
-        }*/
-
-        if (GatesIDs[l] == 1) {
-            res = multiplication(r1, r2, c1, c2, mult, h.h);
-        }
-        else if (GatesIDs[l] == 2) {
-            complex<float> second[2][2] = { {1, 0}, {0, exp(PI / Parameters[l] * 1if) } };
-            //struct physeShift pS(Parameters[l]);
-            //pS.phase = Parameters[l];
-            //pS.pS[2][2] = second[2][2];
-            //UE_LOG(LogTemp, Warning, TEXT("%f"), pS.phase);
-            res = multiplication(r1, r2, c1, c2, mult, second);
-
-        }
-        else res = {};
-        
-        for (i = 0; i < r1; i++)
-        {
-            for (j = 0; j < c1; j++)
-            {
-                mult[i][j] = res[i][j];
-            }
         }
     }
 
-    //res = multiplication(r1, r2, c1, c2, h, Slope);
-    //for (i = 0; i < r1; i++)
-    //{
-    //    for (j = 0; j < c1; j++)
-    //    {
-    //        //mult[i][j] = res[i][j];
-    //    }
-    //}
-    //res2 = multiplication(r1, r2, c1, c2, p, mult);
 
-    //for (i = 0; i < r1; i++)
-    //{
-    //    for (j = 0; j < c1; j++)
-    //    {
-    //       // mult[i][j] = res2[i][j];
-    //    }
+    //slope = h * slope;
 
-    //}
+    //slope2 = qnot * slope2;
 
-    //complex<float>** res3 = multiplication(r1, r2, c1, c2, mult, h.h, mult);
+    //tp = slope2.tensorProduct(slope);
+
+    //tp = cp * tp;
+
+    //auto phase = log(tp[3][0] / tp[1][0].real()).imag();
+    //auto prob = tp;
+    //UE_LOG(LogTemp, Warning, TEXT("%f"), phase);
     const int nrolls = 10000; // number of experiments
     std::default_random_engine generator;
-    std::bernoulli_distribution distribution(mult[1][0].real());
+    std::bernoulli_distribution distribution(pow(abs(res[1][0]), 2));
+    //std::bernoulli_distribution distribution(pow(abs(tp[1][0]), 2));
     float posibility = 0;
 
     std::srand(time(NULL));
     generator.seed(rand());
 
     for (int i2 = 0; i2 < nrolls; ++i2) if (distribution(generator)) ++posibility;
-
+    
 	return posibility;
 }
 
