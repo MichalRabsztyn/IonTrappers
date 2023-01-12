@@ -77,18 +77,18 @@ int UCCalculatorMain::CalculateMatrix(TArray<int>GatesIDs, TArray<int>Parameters
 
 {
 
-    double pH = 3.141592 / 3;
+    double pH = 3.141592 / 4;
     const double e = 2.71828;
     int tmp = 3;
-    MatrixCalculator h(2, 2, std::vector<std::vector<std::complex<double>>>{ {1 / sqrt(2), 1 / sqrt(2)}, { 1 / sqrt(2), -1 / sqrt(2) } });
-    MatrixCalculator p(2, 2, std::vector<std::vector<std::complex<double>>>{ {1, 0}, { 0, exp(pH * 1i) } });
-    MatrixCalculator mult(2, 2, std::vector<std::vector<std::complex<double>>>{ {0, 0}, { 0, 0 } });
+    MatrixCalculator hadamardGate(2, 2, std::vector<std::vector<std::complex<double>>>{ {1 / sqrt(2), 1 / sqrt(2)}, { 1 / sqrt(2), -1 / sqrt(2) } });
+    MatrixCalculator phaseGate(2, 2, std::vector<std::vector<std::complex<double>>>{ {1, 0}, { 0, exp(pH * 1i) } });
+    //Matrix mult(2, 2, std::vector<std::vector<std::complex<double>>>{ {0, 0}, {0, 0} });
     MatrixCalculator slope(2, 1, std::vector<std::vector<std::complex<double>>>{ {1}, { 0 } });
     MatrixCalculator slope2(2, 1, std::vector<std::vector<std::complex<double>>>{ {1}, { 0 } });
-    MatrixCalculator cp(4, 4, std::vector<std::vector<std::complex<double>>>{ {1, 0, 0, 0}, { 0,1,0,0 }, { 0,0,1,0 }, { 0,0,0,exp(pH * 1i) } });
-    MatrixCalculator tp(4, 1);
-    MatrixCalculator qnot(2, 2, std::vector<std::vector<std::complex<double>>>{ {0, 1}, { 1, 0 } });
-
+    MatrixCalculator controlledPhaseGate(4, 4, std::vector<std::vector<std::complex<double>>>{ {1, 0, 0, 0}, { 0,1,0,0 }, { 0,0,1,0 }, { 0,0,0,exp(pH * 1i) } });
+    MatrixCalculator tensorProduct(4, 1);
+    MatrixCalculator qNotGate(2, 2, std::vector<std::vector<std::complex<double>>>{ {0, 1}, { 1, 0 } });
+    MatrixCalculator controlledqNotGate(4, 4, std::vector<std::vector<std::complex<double>>>{ {1, 0, 0, 0}, { 0,1,0,0 }, { 0,0,0,1 }, { 0,0,1,0 } });
     MatrixCalculator res(2, 1);
     MatrixCalculator res2(2, 1);
 
@@ -98,12 +98,24 @@ int UCCalculatorMain::CalculateMatrix(TArray<int>GatesIDs, TArray<int>Parameters
     for (int l = 0; l < GatesIDs.Num(); l++) {
         switch (GatesIDs[l]) {
         case 1:
-            if (l == 0) res = h * slope;
-            else res = h * res;
+            if (l == 0) res = hadamardGate * slope;
+            else res = hadamardGate * res;
             break;
         case 2:
-            if (l == 0) res = p * slope;
-            else res = p * res;
+            if (l == 0) res = phaseGate * slope;
+            else res = phaseGate * res;
+            break;
+        case 4:
+            if (l == 0) res = controlledPhaseGate * slope;
+            else res = controlledPhaseGate * res;
+            break;        
+        case 5:
+            if (l == 0) res = tensorProduct * slope;
+            else res = tensorProduct * res;
+            break;        
+        case 6:
+            if (l == 0) res = qNotGate * slope;
+            else res = qNotGate * res;
             break;
         default:
             break;
@@ -134,7 +146,7 @@ int UCCalculatorMain::CalculateMatrix(TArray<int>GatesIDs, TArray<int>Parameters
     generator.seed(rand());
 
     for (int i2 = 0; i2 < nrolls; ++i2) if (distribution(generator)) ++posibility;
-    
+    posibility = 10000 - posibility;
 	return posibility;
 }
 
