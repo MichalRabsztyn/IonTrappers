@@ -1,15 +1,10 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
+/** @file */
 #pragma once
-
-#include "CoreMinimal.h"
 #include <iostream>
 #include <vector>
 #include <complex>
-/**
- * 
- */
-class IONTRAPPERS_API MatrixCalculator
+using namespace std::complex_literals;
+class IONTRAPPERS_API MatrixCalculator///< Dynamic allocated MatrixCalculator
 {
 	std::complex<double>** m;///< pointer on dynamic allocated tabel
 	int x;///< size of MatrixCalculator in x dimension
@@ -152,3 +147,7 @@ public:
 
 
 };
+
+
+
+

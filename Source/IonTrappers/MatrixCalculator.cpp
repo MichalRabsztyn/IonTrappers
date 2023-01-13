@@ -111,7 +111,7 @@ MatrixCalculator& MatrixCalculator::operator=(const MatrixCalculator& A)
 		int x1 = A.size_x();
 		std::complex<double>** tmp = new std::complex<double>*[y1];
 		for (int i = 0; i < y1; i++)
-			tmp[i] = new std::complex<double>[x];
+			tmp[i] = new std::complex<double>[x1];
 
 		for (int i = 0; i < y1; i++)
 			for (int j = 0; j < x1; j++)

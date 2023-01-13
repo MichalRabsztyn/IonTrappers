@@ -73,15 +73,15 @@ void UCCalculatorMain::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 
 
 //int UCCalculatorMain::CalculateMatrix(float phase, float& posibility)
-float UCCalculatorMain::CalculateMatrix(TArray<float>oneProbability, int gateID, float phase, TArray<float>Parameters)
+TArray<float> UCCalculatorMain::CalculateMatrix(TArray<float>values, int gateID, float phase, TArray<float>Parameters)
 
 {
 
-    double pH = 3.141592 / 3;
+    double pH = 3.141592 / 4;
     const double e = 2.71828;
     int tmp = 3;
     MatrixCalculator hadamardGate(2, 2, std::vector<std::vector<std::complex<double>>>{ {1 / sqrt(2), 1 / sqrt(2)}, { 1 / sqrt(2), -1 / sqrt(2) } });
-    MatrixCalculator phaseGate(2, 2, std::vector<std::vector<std::complex<double>>>{ {1, 0}, { 0, pH } });
+    MatrixCalculator phaseGate(2, 2, std::vector<std::vector<std::complex<double>>>{ {1, 0}, { 0, exp(pH * 1i) } });
     //Matrix mult(2, 2, std::vector<std::vector<std::complex<double>>>{ {0, 0}, {0, 0} });
     MatrixCalculator slope(2, 1, std::vector<std::vector<std::complex<double>>>{ {1}, { 0 } });
     MatrixCalculator slope2(2, 1, std::vector<std::vector<std::complex<double>>>{ {1}, { 0 } });
@@ -91,22 +91,27 @@ float UCCalculatorMain::CalculateMatrix(TArray<float>oneProbability, int gateID,
     MatrixCalculator controlledqNotGate(4, 4, std::vector<std::vector<std::complex<double>>>{ {1, 0, 0, 0}, { 0,1,0,0 }, { 0,0,0,1 }, { 0,0,1,0 } });
     MatrixCalculator res(2, 1);
     MatrixCalculator res2(2, 1);
+    //double imag = res[0][1].imag();
 
+    res[0][0].real(values[1]);
+    res[0][0].imag(values[2]);
+    res[1][0].real(values[3]);
+    res[1][0].imag(values[4]);
 
-
+     UE_LOG(LogTemp, Warning, TEXT("%f"), values[0]);
+     //UE_LOG(LogTemp, Warning, TEXT("%f"), 1-oneProbability[0]);
     //Algo::Reverse(GatesIDs);
         switch (gateID) {
         case 1:
-            if (0) res = hadamardGate * slope;
-            else res = hadamardGate * res;
+                res = hadamardGate * res; 
+
             break;
         case 2:
-            if (0) res = phaseGate * slope;
-            
-            else {
-                phaseGate[1][1] = exp(phaseGate[1][1] * 1i);
                 res = phaseGate * res;
-            }
+                UE_LOG(LogTemp, Warning, TEXT("Fazy"));
+            break;
+        case 3:
+            
             break;
         case 4:
             if (0) res = controlledPhaseGate * slope;
@@ -123,7 +128,10 @@ float UCCalculatorMain::CalculateMatrix(TArray<float>oneProbability, int gateID,
         default:
             break;
         }
-
+        UE_LOG(LogTemp, Warning, TEXT("00: %f"), res[0][0].imag());
+        UE_LOG(LogTemp, Warning, TEXT("01: %f"), res[0][1].imag());
+        UE_LOG(LogTemp, Warning, TEXT("11: %f"), res[1][1].imag());
+        UE_LOG(LogTemp, Warning, TEXT("10: %f"), res[1][0].imag());
 
     //slope = h * slope;
 
@@ -148,8 +156,35 @@ float UCCalculatorMain::CalculateMatrix(TArray<float>oneProbability, int gateID,
     generator.seed(rand());
 
     for (int i2 = 0; i2 < nrolls; ++i2) if (distribution(generator)) ++posibility;
-    posibility = 10000 - posibility;
-	return posibility;
+    posibility = 1 - posibility/10000;
+    UE_LOG(LogTemp, Warning, TEXT("%f"), posibility);
+    TArray<float> returnValues;
+    returnValues.Add(posibility);
+    returnValues.Add(res[0][0].real());
+    returnValues.Add(res[0][0].imag()); 
+    returnValues.Add(res[1][0].real());
+    returnValues.Add(res[1][0].imag());
+
+	return returnValues;
 }
 
 
+//UE_LOG(LogTemp, Warning, TEXT("Real: %f Img: %f"), res[0][0].real(), res[0][0].imag());
+//UE_LOG(LogTemp, Warning, TEXT("Real: %f Img: %f"), res[1][0].real(), res[1][0].imag());
+//UE_LOG(LogTemp, Warning, TEXT("Real: %f Img: %f"), res[1][1].real(), res[1][1].imag());
+//UE_LOG(LogTemp, Warning, TEXT("Real: %f Img: %f"), res[0][1].real(), res[0][1].imag());
+////res = phaseGate * res;
+//res[0][0].real(0.707107);
+//res[0][0].imag(0);
+//res[1][0].real(0.5);
+//res[1][0].imag(0.5);
+//UE_LOG(LogTemp, Warning, TEXT("Real: %f Img: %f"), res[0][0].real(), res[0][0].imag());
+//UE_LOG(LogTemp, Warning, TEXT("Real: %f Img: %f"), res[1][0].real(), res[1][0].imag());
+//UE_LOG(LogTemp, Warning, TEXT("Real: %f Img: %f"), res[1][1].real(), res[1][1].imag());
+//UE_LOG(LogTemp, Warning, TEXT("Real: %f Img: %f"), res[0][1].real(), res[0][1].imag());
+//res = hadamardGate * res;
+//UE_LOG(LogTemp, Warning, TEXT("Real: %f Img: %f"), res[0][0].real(), res[0][0].imag());
+//UE_LOG(LogTemp, Warning, TEXT("Real: %f Img: %f"), res[1][0].real(), res[1][0].imag());
+//UE_LOG(LogTemp, Warning, TEXT("Real: %f Img: %f"), res[1][1].real(), res[1][1].imag());
+//UE_LOG(LogTemp, Warning, TEXT("Real: %f Img: %f"), res[0][1].real(), res[0][1].imag());
+//UE_LOG(LogTemp, Warning, TEXT("Hadamard"));
