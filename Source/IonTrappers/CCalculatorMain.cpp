@@ -164,7 +164,7 @@ TArray<float> UCCalculatorMain::CalculateMatrix(TArray<float>values, int gateID,
                 return calculateDistribution(tensorProduct, res2, values);
             break;
         case 4:
-                res2 = qNotGate * res2;
+                res = qNotGate * res;
             break;        
         default:
             break;
