@@ -40,6 +40,8 @@ struct ionState {
     int id = -1;
 };
 
+
+
 // Sets default values for this component's properties
 UCCalculatorMain::UCCalculatorMain()
 {
@@ -69,15 +71,45 @@ void UCCalculatorMain::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 	// ...
 }
 
+namespace {
+    TArray<float> calculateDistribution(const MatrixCalculator& tensorProduct,const MatrixCalculator& res2, TArray<float>values) {
+        TArray<float> returnValues;
+            const int nrolls = 10000; // number of experiments
+            std::default_random_engine generator;
+            std::bernoulli_distribution distribution(pow(abs(tensorProduct[1][0]), 2));
+            float posibility = 0;
+
+            std::srand(time(NULL));
+            generator.seed(rand());
+
+            for (int i2 = 0; i2 < nrolls; ++i2) if (distribution(generator)) ++posibility;
+            posibility = 1 - posibility / 10000;
+            UE_LOG(LogTemp, Warning, TEXT("%f"), posibility);
+
+            returnValues.Add(tensorProduct[1][0].real());
+            returnValues.Add(res2[0][0].real());
+            returnValues.Add(res2[0][0].imag());
+            returnValues.Add(res2[1][0].real());
+            returnValues.Add(res2[1][0].imag());
+            returnValues.Add(values[5]);
+            returnValues.Add(res2[2][0].real());
+            returnValues.Add(res2[2][0].imag());
+            returnValues.Add(res2[3][0].real());
+            returnValues.Add(res2[3][0].imag());
+
+            return returnValues;
+
+    }
+}
 
 
 
 //int UCCalculatorMain::CalculateMatrix(float phase, float& posibility)
-TArray<float> UCCalculatorMain::CalculateMatrix(TArray<float>values, int gateID, float phase, TArray<float>Parameters)
+TArray<float> UCCalculatorMain::CalculateMatrix(TArray<float>values, int gateID, float phase, TArray<float>parameters)
 
 {
-
-    double pH = 3.141592 / 4;
+    TArray<float> returnValues;
+    double pH = 3.141592 / parameters[0];
     const double e = 2.71828;
     int tmp = 3;
     MatrixCalculator hadamardGate(2, 2, std::vector<std::vector<std::complex<double>>>{ {1 / sqrt(2), 1 / sqrt(2)}, { 1 / sqrt(2), -1 / sqrt(2) } });
@@ -90,47 +122,61 @@ TArray<float> UCCalculatorMain::CalculateMatrix(TArray<float>values, int gateID,
     MatrixCalculator qNotGate(2, 2, std::vector<std::vector<std::complex<double>>>{ {0, 1}, { 1, 0 } });
     MatrixCalculator controlledqNotGate(4, 4, std::vector<std::vector<std::complex<double>>>{ {1, 0, 0, 0}, { 0,1,0,0 }, { 0,0,0,1 }, { 0,0,1,0 } });
     MatrixCalculator res(2, 1);
-    MatrixCalculator res2(2, 1);
+    MatrixCalculator res2(4, 1);
+    MatrixCalculator tmpMatrix(2, 1);
     //double imag = res[0][1].imag();
+        res2[0][0].real(values[1]);
+        res2[0][0].imag(values[2]);
+        res2[1][0].real(values[3]);
+        res2[1][0].imag(values[4]);
+        res2[2][0].real(values[6]);
+        res2[2][0].imag(values[7]);
+        res2[3][0].real(values[8]);
+        res2[3][0].imag(values[9]);
+        //-------------------------
+        res[0][0].real(values[1]);
+        res[0][0].imag(values[2]);
+        res[1][0].real(values[3]);
+        res[1][0].imag(values[4]);
 
-    res[0][0].real(values[1]);
-    res[0][0].imag(values[2]);
-    res[1][0].real(values[3]);
-    res[1][0].imag(values[4]);
+        tmpMatrix[0][0].real(values[6]);
+        tmpMatrix[0][0].imag(values[7]);
+        tmpMatrix[1][0].real(values[8]);
+        tmpMatrix[1][0].imag(values[9]);
+
+        bool resUsed = false;
 
      UE_LOG(LogTemp, Warning, TEXT("%f"), values[0]);
+     UE_LOG(LogTemp, Warning, TEXT("liczba bramek: %d"), values.Num());
      //UE_LOG(LogTemp, Warning, TEXT("%f"), 1-oneProbability[0]);
     //Algo::Reverse(GatesIDs);
         switch (gateID) {
         case 1:
                 res = hadamardGate * res; 
-
+                resUsed = true;
+                UE_LOG(LogTemp, Warning, TEXT("Hadamard"));
             break;
         case 2:
                 res = phaseGate * res;
+                resUsed = true;
                 UE_LOG(LogTemp, Warning, TEXT("Fazy"));
             break;
         case 3:
-            
+                tensorProduct = tmpMatrix.tensorProduct(res);
+                tensorProduct = controlledqNotGate * tensorProduct;
+                UE_LOG(LogTemp, Warning, TEXT("CNOT"));
+                return calculateDistribution(tensorProduct, res2, values);
             break;
         case 4:
-            if (0) res = controlledPhaseGate * slope;
-            else res = controlledPhaseGate * res;
+                res2 = qNotGate * res2;
+                UE_LOG(LogTemp, Warning, TEXT("NOT"));
             break;        
-        case 5:
-            if (0) res = tensorProduct * slope;
-            else res = tensorProduct * res;
-            break;        
-        case 6:
-            if (0) res = qNotGate * slope;
-            else res = qNotGate * res;
-            break;
         default:
             break;
         }
-        UE_LOG(LogTemp, Warning, TEXT("00: %f"), res[0][0].imag());
+        UE_LOG(LogTemp, Warning, TEXT("00: %f"), res[0][0].real());
         UE_LOG(LogTemp, Warning, TEXT("01: %f"), res[0][1].imag());
-        UE_LOG(LogTemp, Warning, TEXT("11: %f"), res[1][1].imag());
+        UE_LOG(LogTemp, Warning, TEXT("11: %f"), res[1][1].real());
         UE_LOG(LogTemp, Warning, TEXT("10: %f"), res[1][0].imag());
 
     //slope = h * slope;
@@ -144,6 +190,7 @@ TArray<float> UCCalculatorMain::CalculateMatrix(TArray<float>values, int gateID,
     //auto phase = log(tp[3][0] / tp[1][0].real()).imag();
     //auto prob = tp;
     //UE_LOG(LogTemp, Warning, TEXT("%f"), phase);
+       
 
 
     const int nrolls = 10000; // number of experiments
@@ -158,12 +205,23 @@ TArray<float> UCCalculatorMain::CalculateMatrix(TArray<float>values, int gateID,
     for (int i2 = 0; i2 < nrolls; ++i2) if (distribution(generator)) ++posibility;
     posibility = 1 - posibility/10000;
     UE_LOG(LogTemp, Warning, TEXT("%f"), posibility);
-    TArray<float> returnValues;
+
+    if (resUsed) {
+        res2[0][0].real(res[0][0].real());
+        res2[0][0].imag(res[0][0].imag());
+        res2[1][0].real(res[1][0].real());
+        res2[1][0].imag(res[1][0].imag());
+    }
     returnValues.Add(posibility);
-    returnValues.Add(res[0][0].real());
-    returnValues.Add(res[0][0].imag()); 
-    returnValues.Add(res[1][0].real());
-    returnValues.Add(res[1][0].imag());
+    returnValues.Add(res2[0][0].real());
+    returnValues.Add(res2[0][0].imag()); 
+    returnValues.Add(res2[1][0].real());
+    returnValues.Add(res2[1][0].imag());
+    returnValues.Add(values[5]);
+    returnValues.Add(res2[2][0].real());
+    returnValues.Add(res2[2][0].imag());
+    returnValues.Add(res2[3][0].real());
+    returnValues.Add(res2[3][0].imag());
 
 	return returnValues;
 }

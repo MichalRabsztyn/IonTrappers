@@ -34,6 +34,6 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	UFUNCTION(BlueprintCallable)
-	TArray<float> CalculateMatrix(TArray<float>oneProbability, int gateID, float phase, TArray<float>Parameters);
+	TArray<float> CalculateMatrix(TArray<float>oneProbability, int gateID, float phase, TArray<float>parameters);
 	complex<float>** multiplication(int r1, int r2, int c1, int c2, complex<float> first[2][2], complex<float> second[2][2]);
 };
